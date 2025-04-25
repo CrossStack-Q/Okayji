@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #333;
+            overflow: hidden;
+            color: white;
+        }
+
+        .navbar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .navbar li {
+            padding: 14px 20px;
+        }
+
+        .navbar li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+
+        .navbar li a:hover {
+            background-color: #575757;
+        }
+
+        /* Categories and Products */
+        h1 {
+            text-align: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .category {
+            background-color: #fff;
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .category h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .product {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .product div {
+            background-color: #fff;
+            margin: 10px;
+            padding: 15px;
+            width: 30%;
+            box-sizing: border-box;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .product img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        .product a {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        /* Login and Register Button Styles */
+        .navbar li a.login {
+            background-color: #4CAF50;
+            padding: 14px 20px;
+        }
+
+        .navbar li a.register {
+            background-color: #008CBA;
+            padding: 14px 20px;
+        }
+
+        .navbar li a.logout {
+            background-color: #f44336;
+            padding: 14px 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="/home.html">Home</a></li>
+            <li id="add-category" style="display:none;"><a href="/add-category.html">Add Category</a></li>
+            <li id="add-subcategory" style="display:none;"><a href="/add-subcategory.html">Add Subcategory</a></li>
+            <li id="add-product" style="display:none;"><a href="/add-product.html">Add Product</a></li>
+            <li><a href="/login.html" id="login-link" class="login" style="display:none;">Login</a></li>
+            <li><a href="/register.html" id="register-link" class="register" style="display:none;">Register</a></li>
+            <li><a href="#" id="logout-link" class="logout" style="display:none;">Logout</a></li>
+        </ul>
+    </nav>
+
+    <h1>Products</h1>
+    <div id="categories"></div>
+
+    <script>
+        // Check if token exists in localStorage
+        const token = localStorage.getItem("token");
+
+        // If token exists, show admin links and hide login/register links
+        if (token) {
+            document.getElementById("add-category").style.display = "inline-block";
+            document.getElementById("add-subcategory").style.display = "inline-block";
+            document.getElementById("add-product").style.display = "inline-block";
+            document.getElementById("login-link").style.display = "none";
+            document.getElementById("register-link").style.display = "none";
+            document.getElementById("logout-link").style.display = "inline-block";
+        } else {
+            // If no token, show login/register links
+            document.getElementById("login-link").style.display = "inline-block";
+            document.getElementById("register-link").style.display = "inline-block";
+            document.getElementById("logout-link").style.display = "none";
+        }
+
+        // Logout functionality
+        document.getElementById("logout-link").addEventListener("click", () => {
+            // Remove token from localStorage
+            localStorage.removeItem("token");
+            // Refresh the page to update the navbar
+            window.location.reload();
+        });
+
+        const API = 'http://localhost:5000/api';
+
+        async function getCategories() {
+            const res = await fetch(`${API}/categories`);
+            return await res.json();
+        }
+
+        async function getProducts() {
+            const res = await fetch(`${API}/products`);
+            return await res.json();
+        }
+
+        window.onload = async () => {
+            try {
+                // Fetch categories
+                const categories = await getCategories();
+                console.log('Categories:', categories);
+
+                // Fetch all products
+                const products = await getProducts();
+                console.log('All Products:', products);
+
+                const container = document.getElementById('categories');
+
+                // Create a map to organize products by category
+                const categoryMap = categories.reduce((map, category) => {
+                    map[category._id] = category;
+                    return map;
+                }, {});
+
+                // Create a map to group products by category
+                const groupedProducts = products.reduce((map, product) => {
+                    const categoryId = product.subCategory.category;
+                    if (!map[categoryId]) {
+                        map[categoryId] = [];
+                    }
+                    map[categoryId].push(product);
+                    return map;
+                }, {});
+
+                // Loop through categories and display products for each category
+                categories.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.classList.add('category');
+                    categoryDiv.innerHTML = `<h2>${category.name}</h2>`;
+
+                    // Get products for this category
+                    const productContainer = document.createElement('div');
+                    productContainer.classList.add('product');
+
+                    const categoryProducts = groupedProducts[category._id] || [];
+                    categoryProducts.forEach(p => {
+                        const productDiv = document.createElement('div');
+                        productDiv.innerHTML = `
+                            <h3>${p.name}</h3>
+                            <img src="${p.image}" width="100"/>
+                            <p>${p.description}</p>
+                            <a href="product.html?id=${p._id}">View</a>
+                        `;
+                        productContainer.appendChild(productDiv);
+                    });
+
+                    categoryDiv.appendChild(productContainer);
+                    container.appendChild(categoryDiv);
+                });
+            } catch (error) {
+                console.error('Error loading categories or products:', error);
+            }
+        };
+    </script>
+</body>
+
+</html>

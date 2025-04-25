@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    #navbar-container {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      text-align: center;
+      background-color: #333;
+      padding: 10px;
+      z-index: 10;
+    }
+
+    #navbar-container ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    #navbar-container ul li {
+      margin: 0 15px;
+    }
+
+    #navbar-container ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      font-size: 16px;
+    }
+
+    #navbar-container ul li a:hover {
+      background-color: #575757;
+      border-radius: 5px;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 60px; /* To avoid overlap with navbar */
+    }
+  </style>
+</head>
+<body>
+  <!-- Internal Navbar -->
+  <div id="navbar-container">
+    <ul>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="register.html">Register</a></li>
+    </ul>
+  </div>
+
+  <div class="login-container">
+    <h2>Login</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    async function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      console.log('Login Response:', data); // Debugging line to check the response
+
+      if (response.ok) {
+        const token = data.token; // Check if the token exists in the response
+        if (token) {
+          console.log('Token received:', token); // Debugging line to check token
+          localStorage.setItem("token", token);
+          window.location.href = "home.html"; // ✅ redirect on success
+        } else {
+          alert("Token is missing in response.");
+        }
+      } else {
+        alert(data.message || "Login failed");
+      }
+    }
+  </script>
+</body>
+</html>

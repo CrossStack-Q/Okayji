@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    #navbar-container {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      text-align: center;
+      background-color: #333;
+      padding: 10px;
+      z-index: 10;
+    }
+
+    #navbar-container ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    #navbar-container ul li {
+      margin: 0 15px;
+    }
+
+    #navbar-container ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      font-size: 16px;
+    }
+
+    #navbar-container ul li a:hover {
+      background-color: #575757;
+      border-radius: 5px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    form {
+      width: 100%;
+      max-width: 400px;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    p {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Internal Navbar (Only Home and Login) -->
+  <div id="navbar-container">
+    <ul>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="login.html">Login</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <h1>Register</h1>
+    <form id="register-form">
+      <input type="text" placeholder="Username" id="username" required>
+      <input type="email" placeholder="Email" id="email" required>
+      <input type="password" placeholder="Password" id="password" required>
+      <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script>
+    document.getElementById('register-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const body = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      };
+      
+      const res = await registerUser(body);
+      alert(res.message || 'Registered');
+      window.location.href = 'login.html';
+    };
+
+    async function registerUser(userData) {
+      const res = await fetch("http://localhost:5000/api/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(userData)
+      });
+      return await res.json();
+    }
+  </script>
+</body>
+</html>

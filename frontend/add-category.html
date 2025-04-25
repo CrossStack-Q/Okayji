@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Category</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div id="navbar-container">
+    <ul>
+      <li><a href="home.html">Home</a></li>
+      <li><a href="add-subcategory.html">Add Subcategory</a></li>
+      <li><a href="add-product.html">Add Product</a></li>
+    </ul>
+  </div>
+
+  <div class="container">
+    <h1>Add Category</h1>
+    <form id="category-form">
+      <input type="text" id="category-name" placeholder="Category Name" required>
+      <button type="submit">Add Category</button>
+    </form>
+
+    <h2>All Categories</h2>
+    <div id="categories-list"></div> <!-- This will hold the list of categories -->
+  </div>
+
+  <script>
+    
+
+    // Function to get categories from the backend
+    async function getCategories() {
+      const response = await fetch('http://localhost:5000/api/categories');
+      const categories = await response.json();
+      displayCategories(categories);
+    }
+
+    // Function to display all categories
+    function displayCategories(categories) {
+      const categoriesListDiv = document.getElementById('categories-list');
+      categoriesListDiv.innerHTML = ''; // Clear existing categories
+
+      if (categories.length === 0) {
+        categoriesListDiv.innerHTML = '<p>No categories available.</p>';
+      } else {
+        categories.forEach(category => {
+          const categoryDiv = document.createElement('div');
+          categoryDiv.classList.add('category-item');
+          categoryDiv.innerHTML = `
+            <div>
+              <strong>Name:</strong> ${category.name}
+            </div>
+            <div>
+              <strong>ID:</strong> ${category._id}
+            </div>
+            <hr>
+          `;
+          categoriesListDiv.appendChild(categoryDiv);
+        });
+      }
+    }
+
+    // Add category function
+    document.getElementById('category-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const categoryName = document.getElementById('category-name').value;
+
+      const response = await fetch('http://localhost:5000/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: categoryName }),
+      });
+
+      if (response.ok) {
+        alert('Category added successfully!');
+        getCategories(); // Refresh the categories list
+        document.getElementById('category-name').value = ''; // Reset the input
+      } else {
+        alert('Failed to add category.');
+      }
+    });
+
+    // Call the function to load categories when the page loads
+    getCategories();
+  </script>
+
+  <style>
+    /* Styling for Add Category page */
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    #category-form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #category-form input {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #category-form button {
+      padding: 10px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #category-form button:hover {
+      background-color: #0056b3;
+    }
+
+    #categories-list {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .category-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .category-item strong {
+      color: #007bff;
+    }
+
+    
+
+    /* Styling for the Navbar */
+    #navbar-container ul {
+      list-style: none;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+      background-color: #333;
+      margin-bottom: 20px;
+    }
+
+    #navbar-container ul li {
+      display: inline;
+      margin: 10px;
+    }
+
+    #navbar-container ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    #navbar-container ul li a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</body>
+</html>

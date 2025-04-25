@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Product - Product Management</title>
+  <link rel="stylesheet" href="app.css">
+  <style>
+    /* Global Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: #333;
+    }
+
+    label {
+      font-size: 1rem;
+      color: #444;
+      margin: 10px 0 5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    button {
+      padding: 12px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Styling for form elements */
+    #subcategory-select, #category-select {
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    select:disabled {
+      background-color: #e0e0e0;
+      cursor: not-allowed;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+    }
+
+    .form-group select {
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+
+    #navbar-container ul {
+      list-style: none;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+      background-color: #333;
+      margin-bottom: 20px;
+    }
+
+    #navbar-container ul li {
+      display: inline;
+      margin: 10px;
+    }
+
+    #navbar-container ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    #navbar-container ul li a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+    <div id="navbar-container">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="add-category.html">Add Category</a></li>
+          <li><a href="add-subcategory.html">Add Subcategory</a></li>
+        </ul>
+      </div>
+
+  <div class="container">
+    <h1>Add New Product</h1>
+    <form id="product-form">
+      <!-- Category Dropdown -->
+      <div class="form-group">
+        <label for="category-select">Select Category:</label>
+        <select id="category-select" required>
+          <option value="">Select a Category</option>
+          <!-- Categories will be loaded dynamically here -->
+        </select>
+      </div>
+
+      <!-- Subcategory Dropdown (Initially Disabled) -->
+      <div class="form-group">
+        <label for="subcategory-select">Select Subcategory:</label>
+        <select id="subcategory-select" required disabled>
+          <option value="">Select a Subcategory</option>
+          <!-- Subcategories will be loaded dynamically here based on the selected category -->
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="product-name">Product Name:</label>
+        <input type="text" id="product-name" placeholder="Product Name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="product-code">Product Code:</label>
+        <input type="text" id="product-code" placeholder="Product Code" required />
+      </div>
+
+      <div class="form-group">
+        <label for="product-description">Description:</label>
+        <textarea id="product-description" placeholder="Product Description" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="product-image">Product Image URL:</label>
+        <input type="text" id="product-image" placeholder="Product Image URL" required />
+      </div>
+
+      <button type="submit">Add Product</button>
+    </form>
+  </div>
+
+  <script>
+   
+
+    async function getCategories() {
+      const response = await fetch('http://localhost:5000/api/categories');
+      const categories = await response.json();
+      const categorySelect = document.getElementById('category-select');
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category._id;
+        option.innerText = category.name;
+        categorySelect.appendChild(option);
+      });
+    }
+
+    // Fetch subcategories for the selected category
+    async function getSubcategories(categoryId) {
+      const response = await fetch(`http://localhost:5000/api/subcategories?categoryId=${categoryId}`);
+      const subcategories = await response.json();
+      const subcategorySelect = document.getElementById('subcategory-select');
+      subcategorySelect.innerHTML = '<option value="">Select a Subcategory</option>'; // Reset options
+
+      if (subcategories.length > 0) {
+        subcategories.forEach(subcategory => {
+          const option = document.createElement('option');
+          option.value = subcategory._id;
+          option.innerText = subcategory.name;
+          subcategorySelect.appendChild(option);
+        });
+        subcategorySelect.disabled = false; // Enable subcategory select once subcategories are loaded
+      } else {
+        subcategorySelect.innerHTML = '<option value="">No subcategories available</option>';
+        subcategorySelect.disabled = true; // Disable subcategory select if no subcategories
+      }
+    }
+
+    // Handle category change event to load subcategories
+    document.getElementById('category-select').addEventListener('change', function() {
+      const selectedCategoryId = this.value;
+      if (selectedCategoryId) {
+        getSubcategories(selectedCategoryId); // Load subcategories based on the selected category
+      } else {
+        document.getElementById('subcategory-select').innerHTML = '<option value="">Select a Subcategory</option>';
+        document.getElementById('subcategory-select').disabled = true; // Disable subcategory select if no category selected
+      }
+    });
+
+    // Handle product form submission
+    document.getElementById('product-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const productName = document.getElementById('product-name').value;
+      const productCode = document.getElementById('product-code').value;
+      const productDescription = document.getElementById('product-description').value;
+      const productImage = document.getElementById('product-image').value;
+      const subcategoryId = document.getElementById('subcategory-select').value;
+
+      // Send a POST request to create a new product
+      fetch('http://localhost:5000/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: productName, productCode, description: productDescription, image: productImage, subCategoryId: subcategoryId }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          alert('Product added successfully!');
+          document.getElementById('product-form').reset(); // Reset form fields
+        })
+        .catch(err => {
+          alert('Error adding product: ' + err);
+        });
+    });
+
+    // Load categories on page load
+    getCategories();
+  </script>
+</body>
+</html>

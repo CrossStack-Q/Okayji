@@ -1,0 +1,53 @@
+<div id="product-details">
+    <div id="navbar-container"></div>
+    <h1 id="product-name"></h1>
+    <img width="300" id="product-image" />
+    <p id="product-description"></p>
+    <p id="product-code"></p>
+    <p id="product-subcategory"></p> <!-- Display Sub Category -->
+    <p id="product-price"></p>
+    <p id="product-discount"></p>
+  </div>
+  
+  <script>
+    fetch('navbar.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('navbar-container').innerHTML = html;
+      });
+    // Get the product ID from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+  
+    if (productId) {
+      // Fetch product details from the backend
+      fetch(`http://localhost:5000/api/products/${productId}`)
+        .then(response => response.json())
+        .then(product => {
+          // Populate product details into the HTML
+          document.getElementById('product-name').textContent = product.name;
+          document.getElementById('product-image').src = product.image;
+          document.getElementById('product-description').textContent =`Description:  ${product.description}`;
+          document.getElementById('product-code').textContent = `Code: ${product.productCode}`;
+  
+          // Check if subCategory exists and display it
+          if (product.subCategory && product.subCategory.name) {
+            document.getElementById('product-subcategory').textContent = `Sub Category: ${product.subCategory.name}`;
+          } else {
+            document.getElementById('product-subcategory').textContent = 'Sub Category: N/A';
+          }
+  
+          // Display variations
+          if (product.variations && product.variations.length > 0) {
+            const variation = product.variations[0]; // Assuming only one variation for simplicity
+            document.getElementById('product-price').textContent = `Price: $${variation.price}`;
+            document.getElementById('product-discount').textContent = `Discount: ${variation.discount}%`;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading product:', error);
+          document.getElementById('product-details').innerHTML = 'Error loading product.';
+        });
+    }
+  </script>
+  

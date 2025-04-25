@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Subcategory</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+    <div id="navbar-container">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="add-category.html">Add Category</a></li>
+          <li><a href="add-product.html">Add Product</a></li>
+        </ul>
+      </div>
+
+  <div class="container">
+    <h1>Add Subcategory</h1>
+
+    <!-- Add Subcategory Form -->
+    <form id="subcategory-form">
+      <label for="category-select">Select Category:</label>
+      <select id="category-select" required>
+        <option value="">--Select Category--</option>
+      </select>
+
+      <input type="text" id="subcategory-name" placeholder="Subcategory Name" required>
+      <button type="submit">Add Subcategory</button>
+    </form>
+
+    <h2>Subcategories for Selected Category</h2>
+    <div id="subcategory-list"></div> 
+  </div>
+
+  <script>
+    
+    async function getCategories() {
+      const response = await fetch('http://localhost:5000/api/categories');
+      const categories = await response.json();
+      displayCategories(categories);
+    }
+
+    // Display categories in the dropdown
+    function displayCategories(categories) {
+      const categorySelect = document.getElementById('category-select');
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category._id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
+      });
+    }
+
+    // Fetch subcategories for the selected category
+    async function getSubcategories(categoryId) {
+      // Ensure categoryId is being passed as a query parameter
+      const response = await fetch(`http://localhost:5000/api/subcategories?categoryId=${categoryId}`);
+      const subcategories = await response.json();
+      displaySubcategories(subcategories);
+    }
+
+    // Display subcategories
+    function displaySubcategories(subcategories) {
+      const subcategoryList = document.getElementById('subcategory-list');
+      subcategoryList.innerHTML = ''; // Clear previous list
+
+      if (subcategories.length === 0) {
+        subcategoryList.innerHTML = '<p>No subcategories available for this category.</p>';
+      } else {
+        subcategories.forEach(subcategory => {
+          const subcategoryDiv = document.createElement('div');
+          subcategoryDiv.classList.add('subcategory-item');
+          subcategoryDiv.innerHTML = `
+            <div>
+              <strong>Name:</strong> ${subcategory.name}
+            </div>
+            <div>
+              <strong>Category:</strong> ${subcategory.category.name}  <!-- Category name is now populated -->
+            </div>
+            <hr>
+          `;
+          subcategoryList.appendChild(subcategoryDiv);
+        });
+      }
+    }
+
+    // Handle Add Subcategory Form Submission
+    document.getElementById('subcategory-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const subcategoryName = document.getElementById('subcategory-name').value;
+      const categoryId = document.getElementById('category-select').value;
+
+      const response = await fetch('http://localhost:5000/api/subcategories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: subcategoryName, categoryId }),
+      });
+
+      if (response.ok) {
+        alert('Subcategory added successfully!');
+        getSubcategories(categoryId); // Refresh the subcategory list for the selected category
+        document.getElementById('subcategory-name').value = ''; // Reset the input
+      } else {
+        alert('Failed to add subcategory.');
+      }
+    });
+
+    // Load categories on page load
+    getCategories();
+
+    // Listen for category selection change to load corresponding subcategories
+    document.getElementById('category-select').addEventListener('change', (e) => {
+      const selectedCategoryId = e.target.value;
+      if (selectedCategoryId) {
+        getSubcategories(selectedCategoryId); // Load subcategories for the selected category
+      } else {
+        document.getElementById('subcategory-list').innerHTML = '<p>Please select a category.</p>';
+      }
+    });
+  </script>
+
+  <style>
+    /* Styling for Add Subcategory page */
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    #subcategory-form {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    #subcategory-form select, #subcategory-form input, #subcategory-form button {
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #subcategory-form button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #subcategory-form button:hover {
+      background-color: #0056b3;
+    }
+
+    #subcategory-list {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .subcategory-item {
+      margin-bottom: 15px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .subcategory-item strong {
+      color: #007bff;
+    }
+
+    #navbar-container ul {
+      list-style: none;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+      background-color: #333;
+      margin-bottom: 20px;
+    }
+
+    #navbar-container ul li {
+      display: inline;
+      margin: 10px;
+    }
+
+    #navbar-container ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    #navbar-container ul li a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</body>
+</html>
